@@ -5,7 +5,7 @@ Moderne, minimalistische Web-Präsenz für die historischen Gottlieb-Daimler-Sta
 ## Enthaltene Inhalte & Funktionen
 
 - **Gottlieb-Daimler-Führung & Gruppenangebote**: Detaillierte Tourinformationen, Stationen und Ablauf.
-- **Impressionen (527 Original-Fotos)**: Vollständiges Fotoarchiv von `levents.eu/impressionen` mit schneller Paginierung und Lightbox-Ansicht.
+- **Impressionen (527 Original-Fotos lokal gesichert)**: Alle 527 Fotos liegen direkt im Projekt unter `/public/impressionen/` (insgesamt nur ca. 60 MB). Dadurch ist die Website **100 % unabhängig von Jimdo**. Selbst wenn Jimdo gekündigt oder abgeschaltet wird, bleiben alle Fotos dauerhaft erhalten und werden direkt über GitHub Pages ausgeliefert.
 - **Gästebuch (110 Original-Bewertungen)**: Vollständige Sammlung seit 2016 mit Suchfunktion und Feedback-Formular.
 - **Direktkontakt & Terminanfrage**: Schlankes Formular mit direkter Weiterleitung an `walter.leppert@aol.com`.
 - **Modernes, schlankes Design**: Gestaltet in harmonischen Blau- und Schiefergrautönen (Tailwind CSS).
