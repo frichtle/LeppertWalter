@@ -1,0 +1,6 @@
+{
+  "name": "Walter Leppert - Stadtführungen Schorndorf",
+  "description": "Gottlieb Daimler Stadtführungen und Erlebnistouren in Schorndorf mit Stadtführer Walter Leppert. Historische Rundgänge, Geburtshaus und Anekdoten.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
