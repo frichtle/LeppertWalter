@@ -47,6 +47,7 @@ export interface GalleryItem {
   description?: string;
   imageUrl: string;
   thumbUrl?: string;
+  fallbackUrl?: string;
   location?: string;
   width?: number;
   height?: number;

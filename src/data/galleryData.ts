@@ -31,6 +31,10 @@ const EXTRACTED_ITEMS: GalleryItem[] = RAW_IMPRESSIONEN.map(
     const num = index + 1;
     const fileExt = ext === "gif" ? "gif" : "jpg";
     const localPath = `./impressionen/imp-${num}.${fileExt}`;
+    const jimdoFallback =
+      ext === "gif"
+        ? `https://image.jimcdn.com/app/cms/image/transf/none/path/s320364cb9e655ce0/image/${imgId}/version/${version}/image.gif`
+        : `https://image.jimcdn.com/app/cms/image/transf/dimension=800x800:format=jpg/path/s320364cb9e655ce0/image/${imgId}/version/${version}/image.${ext}`;
     return {
       id: "imp-" + num,
       title: "Impression #" + num,
@@ -39,6 +43,7 @@ const EXTRACTED_ITEMS: GalleryItem[] = RAW_IMPRESSIONEN.map(
       location: "Schorndorf (Remstal)",
       imageUrl: localPath,
       thumbUrl: localPath,
+      fallbackUrl: jimdoFallback,
       width,
       height,
     };
