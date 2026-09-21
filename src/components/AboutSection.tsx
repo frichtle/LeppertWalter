@@ -14,9 +14,8 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onOpenBooking }) => 
           <div className="lg:col-span-5">
             <div className="rounded-2xl overflow-hidden border border-slate-200 shadow-sm bg-slate-100">
               <img
-                src="https://image.jimcdn.com/app/cms/image/transf/dimension=800x1000:format=jpg/path/s320364cb9e655ce0/image/i0ef314b4c8919e8b/version/1466154490/image.jpg"
+                src="./images/walter-leppert-portrait.jpg"
                 alt="Walter Leppert als Gottlieb Daimler im Frack und Zylinder"
-                referrerPolicy="no-referrer"
                 className="w-full aspect-4/5 object-cover object-top"
               />
               <div className="p-4 bg-white border-t border-slate-100">

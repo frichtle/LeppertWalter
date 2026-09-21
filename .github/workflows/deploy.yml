@@ -38,6 +38,19 @@ jobs:
       - name: Download all 527 full-resolution impression photos
         run: node scripts/download_fullsize_images.cjs
 
+      - name: Commit all original photos permanently to git repository
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          sed -i '/public\/impressionen\//d' .gitignore
+          git add -f public/impressionen/ public/images/ .gitignore
+          if git diff --staged --quiet; then
+            echo "All photos are already committed in the repository."
+          else
+            git commit -m "feat: store all 527 original photos in public/impressionen"
+            git push origin HEAD:${{ github.ref_name }} || echo "Push skipped or requires write permission in Repo Settings -> Actions -> General"
+          fi
+
       - name: Build website
         run: npm run build
 

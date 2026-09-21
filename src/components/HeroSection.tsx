@@ -84,9 +84,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           <div className="lg:col-span-5">
             <div className="rounded-2xl overflow-hidden border border-slate-200 shadow-sm bg-slate-100">
               <img
-                src="https://image.jimcdn.com/app/cms/image/transf/dimension=1200x900:format=jpg/path/s320364cb9e655ce0/image/i777a952fca0ee5ee/version/1469388799/image.jpg"
+                src="./images/walter-leppert-tour.jpg"
                 alt="Historische Stadtführung mit Walter Leppert in Schorndorf"
-                referrerPolicy="no-referrer"
                 className="w-full aspect-4/3 sm:aspect-5/4 object-cover"
               />
               <div className="p-3.5 bg-white border-t border-slate-100 text-xs text-slate-500 flex items-center justify-between">

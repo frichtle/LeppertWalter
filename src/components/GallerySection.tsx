@@ -129,13 +129,7 @@ export const GallerySection: React.FC = () => {
                   src={photo.thumbUrl || photo.imageUrl}
                   alt={`Impression #${globalIndex} - Stadtführung Schorndorf`}
                   loading="lazy"
-                  referrerPolicy="no-referrer"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  onError={(e) => {
-                    if (photo.fallbackUrl && e.currentTarget.src !== photo.fallbackUrl) {
-                      e.currentTarget.src = photo.fallbackUrl;
-                    }
-                  }}
                 />
                 {/* Minimal Overlay Indicator */}
                 <div className="absolute inset-0 bg-slate-950/0 group-hover:bg-slate-950/30 transition-colors flex items-end p-2">
@@ -243,13 +237,7 @@ export const GallerySection: React.FC = () => {
                 <img
                   src={activePhoto.imageUrl}
                   alt={`Impression #${lightboxIndex + 1} - Walter Leppert Stadtführung`}
-                  referrerPolicy="no-referrer"
                   className="max-h-[75vh] w-auto max-w-full object-contain mx-auto transition-opacity duration-200"
-                  onError={(e) => {
-                    if (activePhoto.fallbackUrl && e.currentTarget.src !== activePhoto.fallbackUrl) {
-                      e.currentTarget.src = activePhoto.fallbackUrl;
-                    }
-                  }}
                 />
 
                 {/* Prev Button */}
