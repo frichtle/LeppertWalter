@@ -7,14 +7,30 @@ import { GallerySection } from './components/GallerySection';
 import { GuestbookSection } from './components/GuestbookSection';
 import { ContactSection } from './components/ContactSection';
 import { Footer } from './components/Footer';
+import { AdminModal } from './components/AdminModal';
 import { ArrowUp } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<string>('home');
   const [preselectedTourId, setPreselectedTourId] = useState<string>('daimler-haupttour');
   const [showScrollTop, setShowScrollTop] = useState<boolean>(false);
+  const [isAdminOpen, setIsAdminOpen] = useState<boolean>(false);
 
   useEffect(() => {
+    // Check hash for #admin
+    if (window.location.hash === '#admin') {
+      setIsAdminOpen(true);
+    }
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Shortcut Ctrl+Shift+A or Alt+A to open admin
+      if ((e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'a') || (e.altKey && e.key.toLowerCase() === 'a')) {
+        e.preventDefault();
+        setIsAdminOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
     const handleScroll = () => {
       setShowScrollTop(window.scrollY > 400);
 
@@ -32,7 +48,10 @@ export default function App() {
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   const scrollToSection = (sectionId: string) => {
@@ -95,7 +114,16 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <Footer onNavigate={scrollToSection} />
+      <Footer
+        onNavigate={scrollToSection}
+        onOpenAdmin={() => setIsAdminOpen(true)}
+      />
+
+      {/* Secret Admin Dashboard for Walter Leppert */}
+      <AdminModal
+        isOpen={isAdminOpen}
+        onClose={() => setIsAdminOpen(false)}
+      />
 
       {/* Minimal Scroll To Top Button */}
       {showScrollTop && (

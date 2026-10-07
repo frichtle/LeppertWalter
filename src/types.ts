@@ -33,11 +33,26 @@ export interface GuestbookEntry {
   author: string;
   location: string;
   date: string;
-  rating: number; // 1 to 5
+  rating?: number; // 1 to 5 (optional)
   tourName: string;
   text: string;
   verifiedBadge?: string;
   createdAt: number;
+  status?: 'pending' | 'approved' | 'rejected';
+}
+
+export interface InquiryItem {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  tourId: string;
+  tourTitle: string;
+  date?: string;
+  groupSize?: string;
+  message?: string;
+  status: 'new' | 'contacted' | 'completed';
+  createdAt: any;
 }
 
 export interface GalleryItem {
@@ -48,8 +63,10 @@ export interface GalleryItem {
   imageUrl: string;
   thumbUrl?: string;
   location?: string;
+  year?: string;
   width?: number;
   height?: number;
+  createdAt?: any;
 }
 
 export interface BookingFormState {

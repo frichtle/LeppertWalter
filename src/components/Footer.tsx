@@ -3,9 +3,10 @@ import { Mail, MapPin, ExternalLink, X } from 'lucide-react';
 
 interface FooterProps {
   onNavigate: (id: string) => void;
+  onOpenAdmin?: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
+export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAdmin }) => {
   const [legalModalType, setLegalModalType] = useState<'impressum' | 'datenschutz' | null>(null);
 
   return (
@@ -145,6 +146,18 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             >
               Datenschutz
             </button>
+            {onOpenAdmin && (
+              <>
+                <span>&middot;</span>
+                <button
+                  onClick={onOpenAdmin}
+                  className="hover:text-blue-400 text-slate-500 transition-colors cursor-pointer flex items-center gap-1"
+                  title="Admin-Bereich für Walter Leppert"
+                >
+                  <span>Admin 🔐</span>
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>

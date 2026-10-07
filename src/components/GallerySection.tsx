@@ -1,20 +1,56 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { INITIAL_GALLERY_ITEMS } from '../data/galleryData';
 import { GalleryItem } from '../types';
 import { X, ChevronLeft, ChevronRight, ExternalLink, Image as ImageIcon, MapPin } from 'lucide-react';
+import { db } from '../firebase';
+import { collection, query, onSnapshot } from 'firebase/firestore';
 
 const ITEMS_PER_PAGE = 24;
 
 export const GallerySection: React.FC = () => {
+  const [customPhotos, setCustomPhotos] = useState<GalleryItem[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
-  const totalItems = INITIAL_GALLERY_ITEMS.length;
+  // Real-time listener for Firestore uploaded gallery items
+  useEffect(() => {
+    const q = query(collection(db, 'gallery_items'));
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const items: GalleryItem[] = [];
+        snapshot.forEach((docSnap) => {
+          const d = docSnap.data();
+          items.push({
+            id: docSnap.id,
+            title: d.title || 'Foto',
+            category: d.category || 'allgemein',
+            description: d.description || '',
+            imageUrl: d.imageUrl,
+            thumbUrl: d.imageUrl,
+            year: d.year || '',
+          });
+        });
+        setCustomPhotos(items);
+      },
+      (error) => {
+        console.warn('Gallery items listener error:', error);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+
+  const allPhotos = useMemo(() => {
+    return [...customPhotos, ...INITIAL_GALLERY_ITEMS];
+  }, [customPhotos]);
+
+  const totalItems = allPhotos.length;
   const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
 
   // Paginated items
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const currentPhotos = INITIAL_GALLERY_ITEMS.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  const currentPhotos = allPhotos.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   // Lightbox handlers
   const handleOpenLightbox = (indexInCurrentPage: number) => {
@@ -60,7 +96,7 @@ export const GallerySection: React.FC = () => {
     };
   }, [lightboxIndex]);
 
-  const activePhoto = lightboxIndex !== null ? INITIAL_GALLERY_ITEMS[lightboxIndex] : null;
+  const activePhoto = lightboxIndex !== null ? allPhotos[lightboxIndex] : null;
 
   const goToPage = (page: number) => {
     setCurrentPage(page);

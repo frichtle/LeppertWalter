@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
-import { Mail, MapPin, Send, CheckCircle2 } from 'lucide-react';
+import { Mail, MapPin, Send, CheckCircle2, Loader2 } from 'lucide-react';
 import { TOUR_PACKAGES } from '../data/toursData';
+import { db, handleFirestoreError, OperationType } from '../firebase';
+import { collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { notifyNewInquiry } from '../services/notificationService';
 
 interface ContactSectionProps {
   preselectedTourId?: string;
@@ -14,7 +17,9 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ preselectedTourI
   const [date, setDate] = useState('');
   const [groupSize, setGroupSize] = useState('15');
   const [message, setMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submittedData, setSubmittedData] = useState<{ name: string; tourTitle: string; email: string } | null>(null);
 
   React.useEffect(() => {
     if (preselectedTourId) {
@@ -24,27 +29,55 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ preselectedTourI
 
   const selectedTour = TOUR_PACKAGES.find((t) => t.id === tourId) || TOUR_PACKAGES[0];
 
-  const handleFormSubmit = (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !email.trim()) return;
 
-    const subject = encodeURIComponent(`Anfrage Stadtführung: ${selectedTour.title} - ${name.trim()}`);
-    const body = encodeURIComponent(
-      `Hallo Herr Leppert,\n\nich möchte eine Stadtführung in Schorndorf anfragen:\n\n` +
-      `Führung: ${selectedTour.title}\n` +
-      `Wunschdatum: ${date || 'nach Vereinbarung'}\n` +
-      `Teilnehmerzahl: ca. ${groupSize} Personen\n\n` +
-      `Kontaktdaten:\n` +
-      `Name: ${name.trim()}\n` +
-      `E-Mail: ${email.trim()}\n` +
-      `Telefon: ${phone.trim() || 'k.A.'}\n\n` +
-      `Nachricht / Anmerkungen:\n` +
-      `${message.trim() || 'Keine zusätzlichen Angaben'}\n\n` +
-      `Mit freundlichen Grüßen,\n${name.trim()}`
-    );
+    setIsSubmitting(true);
+    try {
+      const docRef = doc(collection(db, 'inquiries'));
+      await setDoc(docRef, {
+        name: name.trim(),
+        email: email.trim(),
+        phone: phone.trim() || '',
+        tourId: selectedTour.id,
+        tourTitle: selectedTour.title,
+        date: date || 'nach Vereinbarung',
+        groupSize: groupSize.toString() || '15',
+        message: message.trim() || '',
+        status: 'new',
+        createdAt: serverTimestamp(),
+      });
 
-    window.location.href = `mailto:walter.leppert@aol.com?subject=${subject}&body=${body}`;
-    setSubmitted(true);
+      setSubmittedData({
+        name: name.trim(),
+        tourTitle: selectedTour.title,
+        email: email.trim(),
+      });
+      setSubmitted(true);
+
+      // Send instant email alert to Walter Leppert
+      notifyNewInquiry({
+        name: name.trim(),
+        email: email.trim(),
+        phone: phone.trim() || undefined,
+        tourTitle: selectedTour.title,
+        date: date || 'nach Vereinbarung',
+        groupSize: groupSize.toString() || '15',
+        message: message.trim() || undefined,
+      });
+
+      // Reset form fields
+      setName('');
+      setEmail('');
+      setPhone('');
+      setMessage('');
+      setDate('');
+    } catch (error) {
+      handleFirestoreError(error, OperationType.CREATE, 'inquiries');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -116,13 +149,14 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ preselectedTourI
                 Unverbindliche Terminanfrage
               </h3>
 
-              {submitted && (
+              {submitted && submittedData && (
                 <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-sm flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-emerald-700 shrink-0 mt-0.5" />
-                  <div>
-                    <strong>Vielen Dank, {name}!</strong>
-                    <p className="text-xs text-emerald-800 mt-0.5">
-                      Ihr E-Mail-Programm wurde geöffnet, um die Anfrage an <strong>walter.leppert@aol.com</strong> abzusenden.
+                  <div className="space-y-1">
+                    <strong>Vielen Dank, {submittedData.name}!</strong>
+                    <p className="text-xs text-emerald-800 leading-relaxed">
+                      Ihre Terminanfrage für <strong>„{submittedData.tourTitle}“</strong> wurde erfolgreich übermittelt.
+                      Walter Leppert wurde benachrichtigt und meldet sich zeitnah per E-Mail unter <strong>{submittedData.email}</strong> bei Ihnen.
                     </p>
                   </div>
                 </div>
@@ -232,10 +266,15 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ preselectedTourI
                   <span className="text-xs text-slate-500">* Pflichtfelder</span>
                   <button
                     type="submit"
-                    className="px-6 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm transition-colors cursor-pointer flex items-center justify-center gap-2 self-start sm:self-auto shadow-xs active:scale-[0.99]"
+                    disabled={isSubmitting}
+                    className="px-6 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-medium text-sm transition-colors cursor-pointer flex items-center justify-center gap-2 self-start sm:self-auto shadow-xs active:scale-[0.99]"
                   >
-                    <Send className="w-4 h-4" />
-                    <span>Anfrage absenden</span>
+                    {isSubmitting ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Send className="w-4 h-4" />
+                    )}
+                    <span>{isSubmitting ? 'Wird gesendet...' : 'Anfrage absenden'}</span>
                   </button>
                 </div>
               </form>

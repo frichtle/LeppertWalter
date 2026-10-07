@@ -1,0 +1,196 @@
+{
+  "entities": {
+    "Admin": {
+      "title": "Admin",
+      "description": "Administrator account authorized to manage guestbook, inquiries, and gallery.",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "Admin email address"
+        },
+        "role": {
+          "type": "string",
+          "description": "Role identifier, e.g. admin"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp"
+        }
+      },
+      "required": ["email", "role", "createdAt"]
+    },
+    "GuestbookEntry": {
+      "title": "GuestbookEntry",
+      "description": "Public guestbook entry submitted by visitors or managed by admin.",
+      "type": "object",
+      "properties": {
+        "author": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "description": "Author name"
+        },
+        "location": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "description": "Origin city or location"
+        },
+        "rating": {
+          "type": "number",
+          "description": "Star rating between 1 and 5"
+        },
+        "tourName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "description": "Tour name"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 2000,
+          "description": "Review text"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "approved", "rejected"],
+          "description": "Approval status"
+        },
+        "entryNumber": {
+          "type": "number",
+          "description": "Incremental entry number"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp"
+        }
+      },
+      "required": ["author", "location", "tourName", "text", "status", "entryNumber", "createdAt"]
+    },
+    "Inquiry": {
+      "title": "Inquiry",
+      "description": "Tour booking inquiry submitted from the contact form.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "description": "Customer name"
+        },
+        "email": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 150,
+          "description": "Customer email"
+        },
+        "phone": {
+          "type": "string",
+          "maxLength": 50,
+          "description": "Customer phone"
+        },
+        "tourId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50,
+          "description": "Selected tour identifier"
+        },
+        "tourTitle": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 150,
+          "description": "Selected tour title"
+        },
+        "date": {
+          "type": "string",
+          "maxLength": 50,
+          "description": "Preferred date"
+        },
+        "groupSize": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 20,
+          "description": "Estimated group size"
+        },
+        "message": {
+          "type": "string",
+          "maxLength": 3000,
+          "description": "Optional notes or message"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["new", "contacted", "completed"],
+          "description": "Inquiry handling status"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Submission timestamp"
+        }
+      },
+      "required": ["name", "email", "tourId", "tourTitle", "status", "createdAt"]
+    },
+    "GalleryItem": {
+      "title": "GalleryItem",
+      "description": "Photo item in the gallery uploaded or added by admin.",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 150,
+          "description": "Photo title or description"
+        },
+        "category": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50,
+          "description": "Category name"
+        },
+        "imageUrl": {
+          "type": "string",
+          "minLength": 5,
+          "description": "Image URL or data URI"
+        },
+        "year": {
+          "type": "string",
+          "maxLength": 10,
+          "description": "Year or date"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Extended caption"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp"
+        }
+      },
+      "required": ["title", "category", "imageUrl", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/admins/{adminId}": {
+      "schema": "Admin",
+      "description": "Admin privileges and account records"
+    },
+    "/guestbook_entries/{entryId}": {
+      "schema": "GuestbookEntry",
+      "description": "Visitor guestbook reviews with approval status"
+    },
+    "/inquiries/{inquiryId}": {
+      "schema": "Inquiry",
+      "description": "Tour booking inquiries from contact form"
+    },
+    "/gallery_items/{itemId}": {
+      "schema": "GalleryItem",
+      "description": "Gallery photos uploaded and curated by admin"
+    }
+  }
+}
