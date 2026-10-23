@@ -70,7 +70,7 @@ export const MaintenancePage: React.FC<MaintenancePageProps> = ({ onOpenAdmin })
     <div className="min-h-screen bg-[#faf6ee] text-slate-800 flex flex-col justify-between selection:bg-amber-200 selection:text-amber-900 font-sans">
       {/* Subtle top heritage bar */}
       <div className="bg-[#2b1f16] text-[#e8dfcf] py-2 px-4 text-center text-xs tracking-wider uppercase border-b border-[#3d2d20]">
-        Gottlieb Daimler · Schorndorf 1834 – 1900 · Historische Stadtführungen
+        Gottlieb Daimler · Schorndorf · Historische Stadtführungen
       </div>
 
       {/* Main Content Container */}
