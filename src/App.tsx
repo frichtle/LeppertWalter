@@ -8,13 +8,60 @@ import { GuestbookSection } from './components/GuestbookSection';
 import { ContactSection } from './components/ContactSection';
 import { Footer } from './components/Footer';
 import { AdminModal } from './components/AdminModal';
-import { ArrowUp } from 'lucide-react';
+import { MaintenancePage } from './components/MaintenancePage';
+import { ArrowUp, Wrench } from 'lucide-react';
+import { db } from './firebase';
+import { doc, onSnapshot, setDoc, serverTimestamp } from 'firebase/firestore';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<string>('home');
   const [preselectedTourId, setPreselectedTourId] = useState<string>('daimler-haupttour');
   const [showScrollTop, setShowScrollTop] = useState<boolean>(false);
   const [isAdminOpen, setIsAdminOpen] = useState<boolean>(false);
+  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState<boolean>(false);
+
+  // Maintenance mode (defaults to true so site stays in Coming Soon mode initially)
+  const [maintenanceMode, setMaintenanceMode] = useState<boolean>(() => {
+    const saved = localStorage.getItem('walter_maintenance_mode');
+    return saved === null ? true : saved !== 'false';
+  });
+
+  // Real-time synchronization of maintenance setting from Firestore
+  useEffect(() => {
+    const unsubscribe = onSnapshot(
+      doc(db, 'settings', 'general'),
+      (snapshot) => {
+        if (snapshot.exists()) {
+          const data = snapshot.data();
+          if (typeof data?.maintenanceMode === 'boolean') {
+            setMaintenanceMode(data.maintenanceMode);
+            localStorage.setItem('walter_maintenance_mode', String(data.maintenanceMode));
+          }
+        }
+      },
+      (error) => {
+        console.warn('Settings listener error:', error);
+      }
+    );
+    return () => unsubscribe();
+  }, []);
+
+  const handleToggleMaintenanceMode = async (enabled: boolean) => {
+    setMaintenanceMode(enabled);
+    localStorage.setItem('walter_maintenance_mode', String(enabled));
+    try {
+      await setDoc(
+        doc(db, 'settings', 'general'),
+        {
+          maintenanceMode: enabled,
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true }
+      );
+    } catch (err) {
+      console.warn('Could not save maintenance setting to Firestore:', err);
+    }
+  };
 
   useEffect(() => {
     // Check hash for #admin
@@ -73,8 +120,44 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // If maintenance mode is active and user is NOT logged in as admin: show Coming Soon page
+  if (maintenanceMode && !isAdminLoggedIn) {
+    return (
+      <>
+        <MaintenancePage onOpenAdmin={() => setIsAdminOpen(true)} />
+
+        <AdminModal
+          isOpen={isAdminOpen}
+          onClose={() => setIsAdminOpen(false)}
+          maintenanceMode={maintenanceMode}
+          onToggleMaintenanceMode={handleToggleMaintenanceMode}
+          onAuthChange={(authed) => setIsAdminLoggedIn(authed)}
+        />
+      </>
+    );
+  }
+
+  // Full website view (either maintenanceMode is false, or admin is authenticated in preview mode)
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 text-slate-800 antialiased selection:bg-blue-100 selection:text-blue-900">
+      {/* Top Banner if Admin is viewing full site while Maintenance Mode is active */}
+      {maintenanceMode && isAdminLoggedIn && (
+        <div className="bg-amber-600 text-white px-4 py-2 text-xs font-medium flex items-center justify-between sticky top-0 z-50 shadow-md">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+            <span>
+              Wartungsmodus ist <strong>AKTIV</strong> (Besucher sehen die Coming-Soon-Seite mit Motorkutsche). Sie befinden sich in der <strong>Admin-Vorschau</strong>.
+            </span>
+          </div>
+          <button
+            onClick={() => setIsAdminOpen(true)}
+            className="px-2.5 py-1 rounded bg-amber-700 hover:bg-amber-800 text-white font-semibold cursor-pointer transition-colors shadow-2xs"
+          >
+            Wartungsmodus umschalten
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <Header
         activeTab={activeTab}
@@ -123,6 +206,9 @@ export default function App() {
       <AdminModal
         isOpen={isAdminOpen}
         onClose={() => setIsAdminOpen(false)}
+        maintenanceMode={maintenanceMode}
+        onToggleMaintenanceMode={handleToggleMaintenanceMode}
+        onAuthChange={(authed) => setIsAdminLoggedIn(authed)}
       />
 
       {/* Minimal Scroll To Top Button */}

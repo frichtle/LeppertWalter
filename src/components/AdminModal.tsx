@@ -41,9 +41,18 @@ import { InquiryItem, GuestbookEntry, GalleryItem } from '../types';
 interface AdminModalProps {
   isOpen: boolean;
   onClose: () => void;
+  maintenanceMode: boolean;
+  onToggleMaintenanceMode: (enabled: boolean) => void;
+  onAuthChange?: (isAuthed: boolean) => void;
 }
 
-export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose }) => {
+export const AdminModal: React.FC<AdminModalProps> = ({
+  isOpen,
+  onClose,
+  maintenanceMode,
+  onToggleMaintenanceMode,
+  onAuthChange,
+}) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [pinAuthorized, setPinAuthorized] = useState<boolean>(false);
   const [pinInput, setPinInput] = useState<string>('');
@@ -98,7 +107,9 @@ export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose }) => {
 
   const isAuthorized = isUserAdmin(currentUser) || pinAuthorized;
 
-  // Realtime Listeners for Admin Data
+  useEffect(() => {
+    onAuthChange?.(isAuthorized);
+  }, [isAuthorized, onAuthChange]);
   useEffect(() => {
     if (!isOpen || !isAuthorized) return;
 
@@ -418,6 +429,40 @@ export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose }) => {
         ) : (
           /* Authorized Dashboard */
           <div className="flex-1 flex flex-col space-y-4 overflow-hidden">
+            {/* Maintenance Mode Toggle Bar */}
+            <div className={`p-3.5 rounded-xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
+              maintenanceMode
+                ? 'bg-amber-50/90 border-amber-300'
+                : 'bg-emerald-50/70 border-emerald-300'
+            }`}>
+              <div className="flex items-start sm:items-center gap-2.5">
+                <span className={`w-3 h-3 rounded-full mt-0.5 sm:mt-0 shrink-0 ${
+                  maintenanceMode ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'
+                }`} />
+                <div>
+                  <div className="font-bold text-slate-900 text-xs">
+                    Wartungsmodus: {maintenanceMode ? 'AKTIV (Coming-Soon-Seite aktiv)' : 'INAKTIV (Website ist öffentlich live)'}
+                  </div>
+                  <p className="text-[11px] text-slate-600">
+                    {maintenanceMode
+                      ? 'Normale Besucher sehen die Coming-Soon-Seite mit der Motorkutsche. Sie sehen als Admin die vollständige Website.'
+                      : 'Alle Besucher sehen die vollständige Website mit Rundgängen, Gästebuch und Impressionen.'}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => onToggleMaintenanceMode(!maintenanceMode)}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-colors shrink-0 shadow-2xs self-end sm:self-auto ${
+                  maintenanceMode
+                    ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                    : 'bg-amber-600 hover:bg-amber-700 text-white'
+                }`}
+              >
+                {maintenanceMode ? 'Website jetzt LIVE schalten' : 'Wartungsmodus aktivieren'}
+              </button>
+            </div>
+
             {/* Top Navigation Tabs & Status */}
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3">
               <div className="flex items-center gap-2">

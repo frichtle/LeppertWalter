@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, Clock, MapPin, Star, ArrowRight, Check } from 'lucide-react';
+import { Calendar, Clock, MapPin, MessageSquare, ArrowRight, Check } from 'lucide-react';
 
 interface HeroSectionProps {
   onOpenBooking: () => void;
@@ -51,11 +51,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 onClick={onOpenGuestbook}
                 className="flex items-center gap-2 hover:text-blue-700 transition-colors text-left cursor-pointer"
               >
-                <div className="flex items-center text-amber-500">
-                  <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                </div>
+                <MessageSquare className="w-4 h-4 text-blue-600 shrink-0" />
                 <span className="font-medium underline decoration-slate-300">
-                  5.0 (110 Gästebucheinträge)
+                  110 Gästebucheinträge
                 </span>
               </button>
             </div>

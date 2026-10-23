@@ -173,6 +173,22 @@
         }
       },
       "required": ["title", "category", "imageUrl", "createdAt"]
+    },
+    "Setting": {
+      "title": "Setting",
+      "description": "Global application configuration settings such as maintenance mode.",
+      "type": "object",
+      "properties": {
+        "maintenanceMode": {
+          "type": "boolean",
+          "description": "Whether maintenance / coming-soon mode is enabled"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["maintenanceMode"]
     }
   },
   "firestore": {
@@ -191,6 +207,10 @@
     "/gallery_items/{itemId}": {
       "schema": "GalleryItem",
       "description": "Gallery photos uploaded and curated by admin"
+    },
+    "/settings/{settingId}": {
+      "schema": "Setting",
+      "description": "Global website settings such as maintenance mode"
     }
   }
 }

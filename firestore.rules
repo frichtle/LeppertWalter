@@ -136,5 +136,12 @@ service cloud.firestore {
 
       allow delete: if isValidId(itemId) && isAdmin();
     }
+
+    // Global Settings (e.g. maintenance mode)
+    match /settings/{settingId} {
+      allow get: if isValidId(settingId);
+      allow list: if true;
+      allow write: if isAdmin() && isValidId(settingId);
+    }
   }
 }
