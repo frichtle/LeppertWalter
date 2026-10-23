@@ -54,7 +54,9 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   onAuthChange,
 }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [pinAuthorized, setPinAuthorized] = useState<boolean>(false);
+  const [pinAuthorized, setPinAuthorized] = useState<boolean>(() => {
+    return sessionStorage.getItem('walter_admin_authorized') === 'true';
+  });
   const [pinInput, setPinInput] = useState<string>('');
   const [pinError, setPinError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'guestbook' | 'inquiries' | 'gallery'>('guestbook');
@@ -214,12 +216,14 @@ export const AdminModal: React.FC<AdminModalProps> = ({
     // Master PIN for Walter Leppert / Administrator
     if (trimmed === 'daimler1834' || trimmed === 'leppert73614') {
       setPinAuthorized(true);
+      sessionStorage.setItem('walter_admin_authorized', 'true');
       setPinError(null);
       setPinInput('');
       setFailedAttempts(0);
       setLockoutUntil(0);
       localStorage.removeItem('walter_admin_failed_attempts');
       localStorage.removeItem('walter_admin_lockout_until');
+      onAuthChange?.(true);
     } else {
       const nextFailed = failedAttempts + 1;
       setFailedAttempts(nextFailed);
@@ -522,6 +526,8 @@ export const AdminModal: React.FC<AdminModalProps> = ({
               <button
                 onClick={async () => {
                   setPinAuthorized(false);
+                  sessionStorage.removeItem('walter_admin_authorized');
+                  onAuthChange?.(false);
                   if (currentUser) await logoutUser();
                 }}
                 className="text-xs text-slate-500 hover:text-slate-800 flex items-center gap-1 cursor-pointer transition-colors"

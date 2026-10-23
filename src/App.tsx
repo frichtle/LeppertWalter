@@ -18,7 +18,9 @@ export default function App() {
   const [preselectedTourId, setPreselectedTourId] = useState<string>('daimler-haupttour');
   const [showScrollTop, setShowScrollTop] = useState<boolean>(false);
   const [isAdminOpen, setIsAdminOpen] = useState<boolean>(false);
-  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState<boolean>(false);
+  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState<boolean>(() => {
+    return sessionStorage.getItem('walter_admin_authorized') === 'true';
+  });
 
   // Maintenance mode (defaults to true so site stays in Coming Soon mode initially)
   const [maintenanceMode, setMaintenanceMode] = useState<boolean>(() => {
@@ -120,89 +122,90 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // If maintenance mode is active and user is NOT logged in as admin: show Coming Soon page
-  if (maintenanceMode && !isAdminLoggedIn) {
-    return (
-      <>
-        <MaintenancePage onOpenAdmin={() => setIsAdminOpen(true)} />
-
-        <AdminModal
-          isOpen={isAdminOpen}
-          onClose={() => setIsAdminOpen(false)}
-          maintenanceMode={maintenanceMode}
-          onToggleMaintenanceMode={handleToggleMaintenanceMode}
-          onAuthChange={(authed) => setIsAdminLoggedIn(authed)}
-        />
-      </>
-    );
-  }
-
-  // Full website view (either maintenanceMode is false, or admin is authenticated in preview mode)
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 text-slate-800 antialiased selection:bg-blue-100 selection:text-blue-900">
-      {/* Top Banner if Admin is viewing full site while Maintenance Mode is active */}
-      {maintenanceMode && isAdminLoggedIn && (
-        <div className="bg-amber-600 text-white px-4 py-2 text-xs font-medium flex items-center justify-between sticky top-0 z-50 shadow-md">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
-            <span>
-              Wartungsmodus ist <strong>AKTIV</strong> (Besucher sehen die Coming-Soon-Seite mit Motorkutsche). Sie befinden sich in der <strong>Admin-Vorschau</strong>.
-            </span>
-          </div>
-          <button
-            onClick={() => setIsAdminOpen(true)}
-            className="px-2.5 py-1 rounded bg-amber-700 hover:bg-amber-800 text-white font-semibold cursor-pointer transition-colors shadow-2xs"
-          >
-            Wartungsmodus umschalten
-          </button>
-        </div>
+      {/* If maintenance mode is active and user is NOT logged in as admin: show Coming Soon page */}
+      {maintenanceMode && !isAdminLoggedIn ? (
+        <MaintenancePage onOpenAdmin={() => setIsAdminOpen(true)} />
+      ) : (
+        <>
+          {/* Top Banner if Admin is viewing full site while Maintenance Mode is active */}
+          {maintenanceMode && isAdminLoggedIn && (
+            <div className="bg-amber-600 text-white px-4 py-2 text-xs font-medium flex items-center justify-between sticky top-0 z-50 shadow-md">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                <span>
+                  Wartungsmodus ist <strong>AKTIV</strong> (Besucher sehen die Coming-Soon-Seite mit Motorkutsche). Sie befinden sich in der <strong>Admin-Vorschau</strong>.
+                </span>
+              </div>
+              <button
+                onClick={() => setIsAdminOpen(true)}
+                className="px-2.5 py-1 rounded bg-amber-700 hover:bg-amber-800 text-white font-semibold cursor-pointer transition-colors shadow-2xs"
+              >
+                Admin-Bereich öffnen
+              </button>
+            </div>
+          )}
+
+          {/* Header */}
+          <Header
+            activeTab={activeTab}
+            setActiveTab={scrollToSection}
+            onOpenBooking={() => handleOpenBooking()}
+          />
+
+          {/* Main Content */}
+          <main className="flex-1">
+            {/* 1. Startseite */}
+            <HeroSection
+              onOpenBooking={() => handleOpenBooking()}
+              onExploreTours={() => scrollToSection('tours')}
+              onOpenGuestbook={() => scrollToSection('guestbook')}
+            />
+
+            {/* 2. Führungen & Stationen */}
+            <ToursSection
+              onSelectTourForBooking={(tourId) => handleOpenBooking(tourId)}
+            />
+
+            {/* 3. Über Walter Leppert */}
+            <AboutSection
+              onOpenBooking={() => handleOpenBooking()}
+            />
+
+            {/* 4. Impressionen */}
+            <GallerySection />
+
+            {/* 5. Gästebuch (110 Original-Bewertungen) */}
+            <GuestbookSection />
+
+            {/* 6. Kontakt & Anfrage */}
+            <ContactSection
+              preselectedTourId={preselectedTourId}
+            />
+          </main>
+
+          {/* Footer */}
+          <Footer
+            onNavigate={scrollToSection}
+            onOpenAdmin={() => setIsAdminOpen(true)}
+          />
+
+          {/* Minimal Scroll To Top Button */}
+          {showScrollTop && (
+            <button
+              onClick={scrollToTop}
+              className="fixed bottom-6 right-6 z-30 p-3 rounded-full bg-white text-slate-700 hover:text-blue-600 hover:border-blue-300 border border-slate-200 shadow-md transition-all active:scale-95 cursor-pointer flex items-center justify-center animate-in fade-in"
+              aria-label="Nach oben"
+              title="Nach oben scrollen"
+            >
+              <ArrowUp className="w-4 h-4" />
+            </button>
+          )}
+        </>
       )}
 
-      {/* Header */}
-      <Header
-        activeTab={activeTab}
-        setActiveTab={scrollToSection}
-        onOpenBooking={() => handleOpenBooking()}
-      />
-
-      {/* Main Content */}
-      <main className="flex-1">
-        {/* 1. Startseite */}
-        <HeroSection
-          onOpenBooking={() => handleOpenBooking()}
-          onExploreTours={() => scrollToSection('tours')}
-          onOpenGuestbook={() => scrollToSection('guestbook')}
-        />
-
-        {/* 2. Führungen & Stationen */}
-        <ToursSection
-          onSelectTourForBooking={(tourId) => handleOpenBooking(tourId)}
-        />
-
-        {/* 3. Über Walter Leppert */}
-        <AboutSection
-          onOpenBooking={() => handleOpenBooking()}
-        />
-
-        {/* 4. Impressionen */}
-        <GallerySection />
-
-        {/* 5. Gästebuch (110 Original-Bewertungen) */}
-        <GuestbookSection />
-
-        {/* 6. Kontakt & Anfrage */}
-        <ContactSection
-          preselectedTourId={preselectedTourId}
-        />
-      </main>
-
-      {/* Footer */}
-      <Footer
-        onNavigate={scrollToSection}
-        onOpenAdmin={() => setIsAdminOpen(true)}
-      />
-
-      {/* Secret Admin Dashboard for Walter Leppert */}
+      {/* Secret Admin Dashboard for Walter Leppert (Always mounted at root so state never resets!) */}
       <AdminModal
         isOpen={isAdminOpen}
         onClose={() => setIsAdminOpen(false)}
@@ -210,18 +213,6 @@ export default function App() {
         onToggleMaintenanceMode={handleToggleMaintenanceMode}
         onAuthChange={(authed) => setIsAdminLoggedIn(authed)}
       />
-
-      {/* Minimal Scroll To Top Button */}
-      {showScrollTop && (
-        <button
-          onClick={scrollToTop}
-          className="fixed bottom-6 right-6 z-30 p-3 rounded-full bg-white text-slate-700 hover:text-blue-600 hover:border-blue-300 border border-slate-200 shadow-md transition-all active:scale-95 cursor-pointer flex items-center justify-center animate-in fade-in"
-          aria-label="Nach oben"
-          title="Nach oben scrollen"
-        >
-          <ArrowUp className="w-4 h-4" />
-        </button>
-      )}
     </div>
   );
 }
