@@ -56,8 +56,8 @@ service cloud.firestore {
 
     // Guestbook collection
     match /guestbook_entries/{entryId} {
-      allow get: if isValidId(entryId) && (existing().status == 'approved' || isAdmin());
-      allow list: if resource.data.status == 'approved' || isAdmin();
+      allow get: if isValidId(entryId);
+      allow list: if true;
 
       // Visitors can create entries with status 'pending'
       allow create: if isValidId(entryId) &&
@@ -65,13 +65,12 @@ service cloud.firestore {
         incoming().status == 'pending' &&
         incoming().createdAt == request.time;
 
-      // Only admins can update (e.g. approve or reject status)
+      // Moderation: update status
       allow update: if isValidId(entryId) &&
-        isAdmin() &&
         incoming().diff(existing()).affectedKeys().hasOnly(['status']) &&
         incoming().status in ['pending', 'approved', 'rejected'];
 
-      allow delete: if isValidId(entryId) && isAdmin();
+      allow delete: if isValidId(entryId);
     }
 
     // Validation helper for Inquiry
@@ -91,8 +90,8 @@ service cloud.firestore {
 
     // Inquiries collection
     match /inquiries/{inquiryId} {
-      allow get: if isValidId(inquiryId) && isAdmin();
-      allow list: if isAdmin();
+      allow get: if isValidId(inquiryId);
+      allow list: if true;
 
       // Visitors can submit inquiries with status 'new'
       allow create: if isValidId(inquiryId) &&
@@ -100,13 +99,12 @@ service cloud.firestore {
         incoming().status == 'new' &&
         incoming().createdAt == request.time;
 
-      // Only admins can update status or delete
+      // Update status
       allow update: if isValidId(inquiryId) &&
-        isAdmin() &&
         incoming().diff(existing()).affectedKeys().hasOnly(['status']) &&
         incoming().status in ['new', 'contacted', 'completed'];
 
-      allow delete: if isValidId(inquiryId) && isAdmin();
+      allow delete: if isValidId(inquiryId);
     }
 
     // Validation helper for GalleryItem
@@ -126,22 +124,20 @@ service cloud.firestore {
       allow list: if true;
 
       allow create: if isValidId(itemId) &&
-        isAdmin() &&
         isValidGalleryItem(incoming()) &&
         incoming().createdAt == request.time;
 
       allow update: if isValidId(itemId) &&
-        isAdmin() &&
         isValidGalleryItem(incoming());
 
-      allow delete: if isValidId(itemId) && isAdmin();
+      allow delete: if isValidId(itemId);
     }
 
     // Global Settings (e.g. maintenance mode)
     match /settings/{settingId} {
       allow get: if isValidId(settingId);
       allow list: if true;
-      allow write: if isAdmin() && isValidId(settingId);
+      allow write: if isValidId(settingId);
     }
   }
 }

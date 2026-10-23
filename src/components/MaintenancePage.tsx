@@ -326,10 +326,10 @@ export const MaintenancePage: React.FC<MaintenancePageProps> = ({ onOpenAdmin })
         <button
           onClick={onOpenAdmin}
           className="inline-flex items-center gap-1.5 text-slate-500 hover:text-slate-900 transition-colors cursor-pointer py-1 px-2.5 rounded-lg border border-slate-300/80 hover:bg-white bg-white/50 text-[11px]"
-          title="Admin-Login & Website-Vorschau"
+          title="Admin-Login"
         >
           <Lock className="w-3 h-3 text-amber-800" />
-          <span>Vorschau-Login für Walter Leppert / Admin</span>
+          <span>Admin-Login</span>
         </button>
       </footer>
     </div>
