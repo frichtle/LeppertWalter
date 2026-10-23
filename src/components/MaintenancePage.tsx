@@ -3,6 +3,7 @@ import { Mail, MapPin, Lock, Calendar, ExternalLink, Send, CheckCircle2, Loader2
 import { db, handleFirestoreError, OperationType } from '../firebase';
 import { collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { notifyNewInquiry } from '../services/notificationService';
+import comingSoonImage from '../assets/coming-soon-motorkutsche.png';
 
 interface MaintenancePageProps {
   onOpenAdmin: () => void;
@@ -90,7 +91,7 @@ export const MaintenancePage: React.FC<MaintenancePageProps> = ({ onOpenAdmin })
         {/* Vintage Illustration Banner */}
         <div className="w-full max-w-3xl rounded-2xl overflow-hidden shadow-xl border-4 border-[#e5d8c3] bg-white relative group">
           <img
-            src="/assets/aistudio/image_7d9f51b2.png"
+            src={comingSoonImage}
             alt="Coming soon - Gottlieb Daimler Motorkutsche 1886"
             className="w-full h-auto object-contain block hover:scale-[1.01] transition-transform duration-500"
           />

@@ -14,6 +14,8 @@ import {
   RefreshCw,
   ExternalLink,
   Phone,
+  Copy,
+  Check,
 } from 'lucide-react';
 import {
   auth,
@@ -99,6 +101,12 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   const [photoDescription, setPhotoDescription] = useState('');
   const [uploadLoading, setUploadLoading] = useState(false);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
+
+  // Reply Modal State
+  const [replyInquiry, setReplyInquiry] = useState<InquiryItem | null>(null);
+  const [replySubject, setReplySubject] = useState('');
+  const [replyMessage, setReplyMessage] = useState('');
+  const [replyCopied, setReplyCopied] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -671,17 +679,20 @@ export const AdminModal: React.FC<AdminModalProps> = ({
 
                             <div className="flex items-center gap-2">
                               {/* Reply button */}
-                              <a
-                                href={`mailto:${inq.email}?subject=${encodeURIComponent(
-                                  `Ihre Anfrage zur Stadtführung: ${inq.tourTitle}`
-                                )}&body=${encodeURIComponent(
-                                  `Hallo ${inq.name},\n\nvielen Dank für Ihre Anfrage bezüglich der Führung „${inq.tourTitle}“ am ${inq.date}.\n\nMit freundlichen Grüßen,\nWalter Leppert`
-                                )}`}
+                              <button
+                                onClick={() => {
+                                  setReplyInquiry(inq);
+                                  setReplySubject(`Ihre Anfrage zur Stadtführung: ${inq.tourTitle}`);
+                                  setReplyMessage(
+                                    `Hallo ${inq.name},\n\nvielen Dank für Ihre Anfrage bezüglich der Führung „${inq.tourTitle}“ am ${inq.date}.\n\nGerne bestätige ich Ihnen diesen Termin. Treffpunkt ist am Marktplatz vor dem historischen Rathaus in Schorndorf.\n\nSollten Sie noch Fragen haben, erreichen Sie mich jederzeit gern.\n\nHerzliche Grüße,\nWalter Leppert\nStadtführer Schorndorf\nTel: 0170 1234567`
+                                  );
+                                  setReplyCopied(false);
+                                }}
                                 className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
                               >
                                 <Mail className="w-3.5 h-3.5" />
                                 <span>Antworten</span>
-                              </a>
+                              </button>
 
                               <select
                                 value={inq.status}
@@ -921,6 +932,116 @@ export const AdminModal: React.FC<AdminModalProps> = ({
           </div>
         )}
       </div>
+
+      {/* Reply Dialog Modal */}
+      {replyInquiry && (
+        <div className="fixed inset-0 z-60 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 space-y-5 shadow-2xl border border-slate-200">
+            <div className="flex items-start justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h4 className="font-bold text-slate-900 text-base">Antwort an Gast verfassen</h4>
+                <p className="text-xs text-slate-500">
+                  An: <span className="font-semibold text-slate-800">{replyInquiry.name}</span> ({replyInquiry.email})
+                </p>
+              </div>
+              <button
+                onClick={() => setReplyInquiry(null)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer"
+                title="Schließen"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-600 mb-1">Betreff:</label>
+                <input
+                  type="text"
+                  value={replySubject}
+                  onChange={(e) => setReplySubject(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-900 text-xs focus:ring-1 focus:ring-blue-600"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-600 mb-1">Nachricht:</label>
+                <textarea
+                  rows={6}
+                  value={replyMessage}
+                  onChange={(e) => setReplyMessage(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-900 text-xs focus:ring-1 focus:ring-blue-600 font-sans leading-relaxed"
+                />
+              </div>
+            </div>
+
+            {/* Quick Action Options */}
+            <div className="space-y-2 pt-2 border-t border-slate-100">
+              <span className="text-[11px] font-semibold text-slate-600 block">Antwort absenden / öffnen:</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {/* 1. Gmail Webmail */}
+                <a
+                  href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
+                    replyInquiry.email
+                  )}&su=${encodeURIComponent(replySubject)}&body=${encodeURIComponent(replyMessage)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => {
+                    handleUpdateInquiryStatus(replyInquiry.id, 'contacted');
+                  }}
+                  className="px-3.5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-medium text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+                >
+                  <Mail className="w-3.5 h-3.5" />
+                  <span>Direkt in Gmail öffnen</span>
+                </a>
+
+                {/* 2. Mail Client (mailto:) */}
+                <a
+                  href={`mailto:${replyInquiry.email}?subject=${encodeURIComponent(
+                    replySubject
+                  )}&body=${encodeURIComponent(replyMessage)}`}
+                  onClick={() => {
+                    handleUpdateInquiryStatus(replyInquiry.id, 'contacted');
+                  }}
+                  className="px-3.5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+                >
+                  <Mail className="w-3.5 h-3.5" />
+                  <span>In Mail-App öffnen</span>
+                </a>
+              </div>
+
+              {/* 3. Copy to Clipboard */}
+              <button
+                type="button"
+                onClick={() => {
+                  const fullText = `An: ${replyInquiry.email}\nBetreff: ${replySubject}\n\n${replyMessage}`;
+                  navigator.clipboard.writeText(fullText);
+                  setReplyCopied(true);
+                  handleUpdateInquiryStatus(replyInquiry.id, 'contacted');
+                  setTimeout(() => setReplyCopied(false), 3500);
+                }}
+                className={`w-full px-3.5 py-2.5 rounded-xl border text-xs font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+                  replyCopied
+                    ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
+                    : 'bg-slate-50 border-slate-300 hover:bg-slate-100 text-slate-700'
+                }`}
+              >
+                {replyCopied ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>In Zwischenablage kopiert! (Status auf „In Bearbeitung“ gesetzt)</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3.5 h-3.5 text-slate-500" />
+                    <span>E-Mail-Adresse & Text kopieren</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
